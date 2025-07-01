@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef, ChangeEvent, FormEvent } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 // Assuming this path and function signature are correct based on your project structure
 // It's assumed encodeImage takes an HTMLImageElement and data string, returning a PNG Data URL string
 import { encodeImage } from "../../../lib/steganography"; // Adjust path if needed
@@ -237,16 +236,16 @@ export default function GeneratePage() {
             console.log("Secret key encoded into image successfully.");
             // Stop loading indicator *after* successful stego encoding
             setIsLoading(false);
-          } catch (stegoError: any) {
+          } catch (stegoError: unknown) {
             console.error(
               "Steganography encoding error for secret key:",
               stegoError
             );
-            setError(
-              `Failed to encode secret key into image: ${
-                stegoError.message || String(stegoError)
-              }`
-            );
+            const errorMessage =
+              stegoError instanceof Error
+                ? stegoError.message
+                : String(stegoError);
+            setError(`Failed to encode secret key into image: ${errorMessage}`);
             setStegoSecretImageUrl(null); // Ensure image is cleared on error
             setIsLoading(false); // Stop loading on error
           }
@@ -269,10 +268,11 @@ export default function GeneratePage() {
         );
         setIsLoading(false);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Catch network errors or other unexpected issues during fetch/initial processing
       console.error("Form submission or fetch error:", err);
-      setError(`Network or processing error: ${err.message || String(err)}`);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(`Network or processing error: ${errorMessage}`);
       setIsLoading(false);
     }
     // Note: isLoading might still be true here if encoding is happening asynchronously in the Image onload.

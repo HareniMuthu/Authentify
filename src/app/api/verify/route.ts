@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       console.log(
         `[API Verify] advancedQDSVerifySignature result: ${isAuthentic}`
       );
-    } catch (verifyError: any) {
+    } catch (verifyError: unknown) {
       console.error(
         "[API Verify] Error during advancedQDSVerifySignature:",
         verifyError
@@ -151,13 +151,16 @@ export async function POST(request: NextRequest) {
               decryptedData = "(Decryption Failed)";
             }
             finalMessage = "✅ Product is AUTHENTIC (Verified and recorded)";
-          } catch (updateError: any) {
+          } catch (updateError: unknown) {
             // Catch potential update errors
             console.error(
               `[API Verify] Failed to update verification status for block ${block.id}:`,
               updateError
             );
-            if (updateError.message?.includes("Unknown argument")) {
+            if (
+              updateError instanceof Error &&
+              updateError.message?.includes("Unknown argument")
+            ) {
               // Check for the specific error again
               finalMessage =
                 "✅ Product is AUTHENTIC (Ledger update failed: Client out of sync - try restarting server/regenerating client)";

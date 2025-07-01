@@ -1,7 +1,6 @@
 "use client";
 import { useState, ChangeEvent } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import QRScanner from "@/app/components/QRScanner"; // Keep for Product QR scanning
 import jsQR from "jsqr"; // Keep for decoding Product QR from image upload
 // Assuming this path and function signature are correct based on your project structure
@@ -132,24 +131,24 @@ export default function VerifyPage() {
             ); // Show API message/error as result
             setError(""); // Clear general error if API provided a result message
           }
-        } catch (networkError: any) {
+        } catch (networkError: unknown) {
           // Handle network errors separately
           console.error("Verification network error:", networkError);
           setError(
             `Network error during verification: ${
-              networkError.message || String(networkError)
+              networkError instanceof Error ? networkError.message : String(networkError)
             }`
           );
           setResult(""); // Clear result on network error
         } finally {
           setIsVerifying(false); // Stop loading indicator after API call
         }
-      } catch (generalError: any) {
+      } catch (generalError: unknown) {
         // Catch any unexpected errors during the process after image load
         console.error("Error during verification process:", generalError);
         setError(
           `An unexpected error occurred: ${
-            generalError.message || String(generalError)
+            generalError instanceof Error ? generalError.message : String(generalError)
           }`
         );
         setIsVerifying(false);
@@ -235,11 +234,11 @@ export default function VerifyPage() {
               // Set error if QR not detected in Product image
               setError("No QR code detected in the uploaded Product image.");
             }
-          } catch (qrError: any) {
+          } catch (qrError: unknown) {
             console.error("jsQR Error:", qrError);
             setError(
               `Error decoding Product QR from image: ${
-                qrError.message || String(qrError)
+                qrError instanceof Error ? qrError.message : String(qrError)
               }`
             );
           }

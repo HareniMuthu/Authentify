@@ -143,21 +143,27 @@ export async function POST(request: NextRequest) {
         );
       }
       // *****************************
-    } catch (dbError: any) {
+    } catch (dbError: unknown) {
       console.error(
         "[API Generate] Database error during block creation or confirmation:",
         dbError
       );
+      const errorObj = dbError as {
+        code?: string;
+        meta?: { target?: string[] };
+        message?: string;
+      };
+
       if (
-        dbError.code === "P2002" ||
-        (dbError.meta && dbError.meta.target?.includes("encrypted_data_salt"))
+        errorObj.code === "P2002" ||
+        (errorObj.meta && errorObj.meta.target?.includes("encrypted_data_salt"))
       ) {
         throw new Error(
           `Failed to save block: An item with the same salt (${encryptedDataSalt}) already exists in the ledger.`
         );
       } else if (
-        dbError.code === "P2002" ||
-        (dbError.meta && dbError.meta.target?.includes("current_block_hash"))
+        errorObj.code === "P2002" ||
+        (errorObj.meta && errorObj.meta.target?.includes("current_block_hash"))
       ) {
         throw new Error(
           `Failed to save block: A block with the same hash already exists (hash collision?).`
@@ -166,7 +172,7 @@ export async function POST(request: NextRequest) {
       // Rethrow other DB errors
       throw new Error(
         `Failed to save the new block to the database: ${
-          dbError.message || dbError
+          errorObj.message || dbError
         }`
       );
     }
