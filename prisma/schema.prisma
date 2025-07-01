@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Define the database provider and connection URL (read from .env)
+datasource db {
+  // *** Set the provider to mongodb ***
+  provider = "mongodb"
+  url      = env("DATABASE_URL") // Ensure DATABASE_URL in .env is a MongoDB connection string
+}
+
+// Define the generator for the Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Define the model for your blockchain ledger table
+model BlockchainLedger {
+  // *** Adjust ID field for MongoDB ObjectId ***
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  timestamp            BigInt   // Store timestamp as BigInt (milliseconds since epoch)
+  product_details_hash String
+  encrypted_data_salt  String   @unique // Salt should uniquely identify the generated item
+  signature            String
+  previous_block_hash  String
+  nonce                Int      // Nonce found during mining
+  current_block_hash   String   @unique // The hash of this block must be unique
+
+  // --- Verification Status Fields ---
+  isVerified           Boolean  @default(false) // Track if this item has been successfully verified
+  verifiedAt           DateTime? // Optional: Timestamp of the first successful verification
+
+  createdAt            DateTime @default(now()) // Optional: Track when the record was created
+
+  // Optional indexes
+  // @@index([encrypted_data_salt])
+  // @@index([previous_block_hash])
+}
+
